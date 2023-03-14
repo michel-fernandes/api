@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/user")
 public class UserResouce {
@@ -20,6 +22,12 @@ public class UserResouce {
     @GetMapping(value = "/{id}")
     public ResponseEntity<UserDTO> findById(@PathVariable Integer id){
         return ResponseEntity.ok().body(mapper.map(userService.findById(id), UserDTO.class));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> findAll(){
+        return ResponseEntity.ok()
+                .body(userService.findAll().stream().map(x -> mapper.map(x, UserDTO.class)).toList());
     }
 
 }
