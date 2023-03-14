@@ -31,14 +31,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(UserDTO userDTO) {
-        findbyEmail(userDTO.getEmail());
+        findbyEmail(userDTO);
         return userRepository.save(mapper.map(userDTO, User.class));
     }
 
-    private void findbyEmail(String email){
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if(userOptional.isPresent()){
+    @Override
+    public User update(UserDTO userDTO) {
+        exists(userDTO.getId());
+        findbyEmail(userDTO);
+        return userRepository.save(mapper.map(userDTO, User.class));
+    }
+
+    private void findbyEmail(UserDTO userDTO){
+        Optional<User> userOptional = userRepository.findByEmail(userDTO.getEmail());
+        if(userOptional.isPresent() && !userOptional.get().getId().equals(userDTO.getId())){
             throw new DataIntegretyViolationException("E-mail já cadasrtado no sistema.");
+        }
+    }
+    public void exists(Integer id) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if(userOptional.isEmpty()) {
+            throw new ObjectNotFoundException("Objeto não encontrado");
         }
     }
 }
