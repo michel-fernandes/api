@@ -3,6 +3,7 @@ package br.com.j38.api.service.impl;
 import br.com.j38.api.domain.User;
 import br.com.j38.api.domain.dto.UserDTO;
 import br.com.j38.api.repositories.UserRepository;
+import br.com.j38.api.service.exceptions.DataIntegretyViolationException;
 import br.com.j38.api.service.exceptions.ObjectNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -30,6 +31,7 @@ class UserServiceImplTest {
     public static final String PASSWORD = "123";
     public static final String OBJETO_NAO_ENCONTRADO = "Objeto não encontrado";
     public static final int INDEX = 0;
+    public static final String EMAIL_JA_CADASTRADO_NO_SISTEMA = "E-mail já cadastrado no sistema";
     @InjectMocks
     private UserServiceImpl userService;
     @Mock
@@ -91,11 +93,76 @@ class UserServiceImplTest {
     }
 
     @Test
-    void create() {
+    @DisplayName("When update then return success")
+    void whenCreateThenReturnSuccess() {
+        when(userRepository.save(any())).thenReturn(user);
+
+        User response = userService.create(userDTO);
+
+        assertNotNull(response);
+        assertEquals(User.class, response.getClass());
+        assertEquals(ID, response.getId());
+        assertEquals(NAME, response.getName());
+        assertEquals(EMAIL, response.getEmail());
+        assertEquals(PASSWORD, response.getPassword());
     }
 
     @Test
-    void update() {
+    @DisplayName("When create then return Data integrity violation exception")
+    void whenCreateThenReturnAnDataIntegrityViolationException() {
+        when(userRepository.findByEmail(anyString())).thenReturn(optionalUser);
+
+        try{
+            optionalUser.get().setId(2);
+            userService.create(userDTO);
+        } catch (Exception ex) {
+            assertEquals(DataIntegretyViolationException.class, ex.getClass());
+            assertEquals(EMAIL_JA_CADASTRADO_NO_SISTEMA, ex.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("When create then return success")
+    void whenUpdateThenReturnSuccess() {
+        when(userRepository.findById(anyInt())).thenReturn(optionalUser);
+        when(userRepository.save(any())).thenReturn(user);
+
+        User response = userService.update(userDTO);
+
+        assertNotNull(response);
+        assertEquals(User.class, response.getClass());
+        assertEquals(ID, response.getId());
+        assertEquals(NAME, response.getName());
+        assertEquals(EMAIL, response.getEmail());
+        assertEquals(PASSWORD, response.getPassword());
+    }
+
+    @Test
+    @DisplayName("When create then return Data integrity violation exception")
+    void whenUpdateThenReturnAnDataIntegrityViolationException() {
+        when(userRepository.findById(anyInt())).thenReturn(optionalUser);
+        when(userRepository.findByEmail(anyString())).thenReturn(optionalUser);
+
+        try{
+            optionalUser.get().setId(2);
+            userService.update(userDTO);
+        } catch (Exception ex) {
+            assertEquals(DataIntegretyViolationException.class, ex.getClass());
+            assertEquals(EMAIL_JA_CADASTRADO_NO_SISTEMA, ex.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("When update then return an Object not found exception")
+    void whenUpdateThenReturnAnObjectNotFoundException() {
+        when(userRepository.findById(anyInt())).thenThrow(new ObjectNotFoundException(OBJETO_NAO_ENCONTRADO));
+
+        try{
+            userService.update(userDTO);
+        } catch (Exception ex){
+            assertEquals(ObjectNotFoundException.class, ex.getClass());
+            assertEquals(OBJETO_NAO_ENCONTRADO, ex.getMessage());
+        }
     }
 
     @Test
