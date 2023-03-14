@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/user")
@@ -26,7 +27,8 @@ public class UserResource {
     @GetMapping
     public ResponseEntity<List<UserDTO>> findAll(){
         return ResponseEntity.ok()
-                .body(userService.findAll().stream().map(x -> mapper.map(x, UserDTO.class)).toList());
+                .body(userService.findAll().stream().map(x -> mapper.map(x, UserDTO.class))
+                        .collect(Collectors.toList()));
     }
 
     @PostMapping
