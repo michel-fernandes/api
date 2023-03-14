@@ -13,9 +13,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import java.util.ArrayList;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
@@ -82,14 +85,21 @@ class UserResourceTest {
         assertEquals(PASSWORD, response.getBody().get(INDEX).getPassword());
     }
 
-
     @Test
-    void findAll() {
+    @DisplayName("When create then return Created")
+    void whenCreateThenReturnCreated() {
+        when(userService.create(any())).thenReturn(user);
+
+        ResponseEntity<UserDTO> response = userResource.create(userDTO);
+
+        assertNotNull(response);
+        assertEquals(ResponseEntity.class, response.getClass());
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getHeaders().get("Location"));
+        assertEquals("http://localhost/1", response.getHeaders().get("Location").get(0));
+        assertEquals("http://localhost/1", response.getHeaders().getLocation().toString());
     }
 
-    @Test
-    void create() {
-    }
 
     @Test
     void update() {
